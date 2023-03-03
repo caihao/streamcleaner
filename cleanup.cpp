@@ -37,47 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA
 *
 *Instructions to future developers:
 *I may not be alive forever. If I die, or stop developing on this work, anyone is free and welcome to fork it, extend it, enhance it, fix it.
-*My next set of steps I plan(ned) to take are the following:
-* #1: write a helper function that processes 1 last set of bins and then discards the buffer and the stft and changes the sample rate settings.
-* the STFT and ISTFT should be generalized so that, as long as N_FFT is 512 and hop_len is 1/4th N_FFT, a variety of rates are able to be used:
-* 48, 24, 12, and 6. Even 96, at least in theory, could be considered although that would be pointless.
-* NBINS only works well when considering at least 32 and at most 40. Beyond 38, the algorithm has not been tested.
-* Specifically it is the logistic function comparison and the statistical error of this comparison which must be considered.
-* Less than about 30 and we really cannot be sure of anything. The more, the better.
-* For extra wide signal its less of an issue, but the statistical aspects are less likely to be satisfactory.
-* We process only in discrete chunks so this should not be too painful.
-* #2:  Revise the process to produce 32 time-bins at a time, so that 96 are considered in each iteration of process instead of 192.
-* The same will also be true of a bunch of other logic, like the entropy computation.
-* #3: extend the safety checking, documentation, and useful/helpful error outputs to cover all cases
-* #4: make the implementation `freestanding` so that it can be utilized on hardware without a computer, as a module of some dedicated SDR software.
-* #5: implement a testbed program for a le potato with an audio HAT so that people can make a $50 denoising dsp.
-* in my concept for it, it should have one wheel to control the entropy setting and another wheel to control gain.
-* #6: get the program as a noise processing library on PIP and provide binaries for use along with wrapper in python.
-* This will allow comparing it to the original, so that further research in python(where it's a lot faster to prototype and see the results) can happen.
-* #7: convert the whole thing with webassembly or some other library so that it can be used on openwebrx and websdr
-* 
-* Other untested but well considered experiments:
-* instead of considering 1 segment at a time for entropy, lumping them together to decimate across time but have a more realistic estimate, and then smoothing
-* Perhaps decimating to three. If we do this, even with a quite small N_BINS for each row, we have enough samples for a decent logistic evaluation.
-*instead of rotating an audio buffer we could use some kind of circular buffer to store the stft contents and just add a frame of zeros whenever we skip
-*the hann inverting(when we process noise frames). This would allow producing only stft for 32 frames at a time, thus reducing waste.
-*the caveat is that i am garbage at using circular buffers and all they really do is let you use pointers to the end as the beginning, like an endless windmill.
-*the benefit they have. is that instead of doing a bunch of copy and paste to move the data through your buffer, you just point correctly and write correctly and
-*it will be like the last addresses come before the first and you can just use x+ offset into the buffer and it will work- the pointers past the transition will
-*read or write back to rows in the beginning, and your code just wont care, it will know it can add data at the end and read correctly and it will just work.
-*
-*
-* 
-* Other issues I have not considered myself able to solve at the moment, that need a high level of consideration: 
-* the STFT function utilizes reflected padding, as in processing discrete chunks. This may be undesirable behavior for streaming.
-* it may be better simply not to pad at all, since this is a streaming implementation.
-* John(OverLordGoldDragon) who wrote the ssqueezepy library might be consulted, as this is an adaption of his work for our use.
-* 
-* 
-* 
-* 
-* 
-* 
 * 
 */
 
