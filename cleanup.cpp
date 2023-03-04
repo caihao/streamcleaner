@@ -37,7 +37,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA
 *
 *Instructions to future developers:
 *I may not be alive forever. If I die, or stop developing on this work, anyone is free and welcome to fork it, extend it, enhance it, fix it.
-* 
 */
 
 
@@ -63,6 +62,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA
 #include <execution>
 #include "fftw3.h"
 
+#include <fstream>
+#include <vector>
+#include <Windows.h>
+#include <mmsystem.h>
+#include <string>
 
 
 #if defined(_MSC_VER)
@@ -104,7 +108,7 @@ private:
 	//you can pass a different entropy constant and NBINS. 
 	//for more info see the class constructor at the head of the public section of the class.
 	//using fftw, processes 2 seconds of audio in 33 ms.
-	
+
 	//note: the python shifts the windows. These windows have been pre ifftshifted for use in the stft class
 	static constexpr std::array<float, 512> shifted_logistic_window{ 1., 0.94409333, 0.88818667, 0.85535081, 0.83195987, 0.81374363, 0.79880003, 0.78611443, 0.77508119, 0.76530966, 0.75653308, 0.7485612, 0.74125354, 0.73450341, 0.72822787, 0.72236118, 0.71685033, 0.71165198, 0.7067302, 0.70205491, 0.69760064, 0.69334567, 0.68927131, 0.68536134, 0.68160163, 0.67797977, 0.67448482, 0.67110707, 0.66783786, 0.66466946, 0.6615949, 0.65860793, 0.65570285, 0.65287452, 0.65011824, 0.64742972, 0.64480505, 0.64224061, 0.63973308, 0.63727941, 0.63487677, 0.63252254, 0.63021427, 0.62794972, 0.62572677, 0.62354345, 0.62139793, 0.61928848, 0.6172135, 0.61517145, 0.61316093, 0.61118059, 0.60922916, 0.60730545, 0.60540833, 0.60353673, 0.60168964, 0.59986611, 0.59806522, 0.5962861, 0.59452794, 0.59278996, 0.5910714, 0.58937155, 0.58768973, 0.5860253, 0.58437763, 0.58274613, 0.58113023, 0.57952939, 0.57794307, 0.57637077, 0.57481202, 0.57326635, 0.5717333, 0.57021245, 0.56870339, 0.56720571, 0.56571903, 0.56424297, 0.56277718, 0.56132129, 0.55987498, 0.55843793, 0.5570098, 0.55559029, 0.55417912, 0.55277598, 0.55138059, 0.54999269, 0.548612, 0.54723826, 0.54587123, 0.54451066, 0.5431563, 0.54180793, 0.54046531, 0.53912822, 0.53779645, 0.53646977, 0.53514798, 0.53383087, 0.53251824, 0.53120989, 0.52990563, 0.52860527, 0.52730862, 0.5260155, 0.52472572, 0.5234391, 0.52215548, 0.52087466, 0.51959649, 0.51832079, 0.51704739, 0.51577613, 0.51450685, 0.51323937, 0.51197354, 0.5107092, 0.50944618, 0.50818433, 0.5069235, 0.50566352, 0.50440424, 0.5031455, 0.50188714, 0.50062902, 0.49937098, 0.49811286, 0.4968545, 0.49559576, 0.49433648, 0.4930765, 0.49181567, 0.49055382, 0.4892908, 0.48802646, 0.48676063, 0.48549315, 0.48422387, 0.48295261, 0.48167921, 0.48040351, 0.47912534, 0.47784452, 0.4765609, 0.47527428, 0.4739845, 0.47269138, 0.47139473, 0.47009437, 0.46879011, 0.46748176, 0.46616913, 0.46485202, 0.46353023, 0.46220355, 0.46087178, 0.45953469, 0.45819207, 0.4568437, 0.45548934, 0.45412877, 0.45276174, 0.451388, 0.45000731, 0.44861941, 0.44722402, 0.44582088, 0.44440971, 0.4429902, 0.44156207, 0.44012502, 0.43867871, 0.43722282, 0.43575703, 0.43428097, 0.43279429, 0.43129661, 0.42978755, 0.4282667, 0.42673365, 0.42518798, 0.42362923, 0.42205693, 0.42047061, 0.41886977, 0.41725387, 0.41562237, 0.4139747, 0.41231027, 0.41062845, 0.4089286, 0.40721004, 0.40547206, 0.4037139, 0.40193478, 0.40013389, 0.39831036, 0.39646327, 0.39459167, 0.39269455, 0.39077084, 0.38881941, 0.38683907, 0.38482855, 0.3827865, 0.38071152, 0.37860207, 0.37645655, 0.37427323, 0.37205028, 0.36978573, 0.36747746, 0.36512323, 0.36272059, 0.36026692, 0.35775939, 0.35519495, 0.35257028, 0.34988176, 0.34712548, 0.34429715, 0.34139207, 0.3384051, 0.33533054, 0.33216214, 0.32889293, 0.32551518, 0.32202023, 0.31839837, 0.31463866, 0.31072869, 0.30665433, 0.30239936, 0.29794509, 0.2932698, 0.28834802, 0.28314967, 0.27763882, 0.27177213, 0.26549659, 0.25874646, 0.2514388, 0.24346692, 0.23469034, 0.22491881, 0.21388557, 0.20119997, 0.18625637, 0.16804013, 0.14464919, 0.11181333, 0.05590667, 0., 0., 0.05590667, 0.11181333, 0.14464919, 0.16804013, 0.18625637, 0.20119997, 0.21388557, 0.22491881, 0.23469034, 0.24346692, 0.2514388, 0.25874646, 0.26549659, 0.27177213, 0.27763882, 0.28314967, 0.28834802, 0.2932698, 0.29794509, 0.30239936, 0.30665433, 0.31072869, 0.31463866, 0.31839837, 0.32202023, 0.32551518, 0.32889293, 0.33216214, 0.33533054, 0.3384051, 0.34139207, 0.34429715, 0.34712548, 0.34988176, 0.35257028, 0.35519495, 0.35775939, 0.36026692, 0.36272059, 0.36512323, 0.36747746, 0.36978573, 0.37205028, 0.37427323, 0.37645655, 0.37860207, 0.38071152, 0.3827865, 0.38482855, 0.38683907, 0.38881941, 0.39077084, 0.39269455, 0.39459167, 0.39646327, 0.39831036, 0.40013389, 0.40193478, 0.4037139, 0.40547206, 0.40721004, 0.4089286, 0.41062845, 0.41231027, 0.4139747, 0.41562237, 0.41725387, 0.41886977, 0.42047061, 0.42205693, 0.42362923, 0.42518798, 0.42673365, 0.4282667, 0.42978755, 0.43129661, 0.43279429, 0.43428097, 0.43575703, 0.43722282, 0.43867871, 0.44012502, 0.44156207, 0.4429902, 0.44440971, 0.44582088, 0.44722402, 0.44861941, 0.45000731, 0.451388, 0.45276174, 0.45412877, 0.45548934, 0.4568437, 0.45819207, 0.45953469, 0.46087178, 0.46220355, 0.46353023, 0.46485202, 0.46616913, 0.46748176, 0.46879011, 0.47009437, 0.47139473, 0.47269138, 0.4739845, 0.47527428, 0.4765609, 0.47784452, 0.47912534, 0.48040351, 0.48167921, 0.48295261, 0.48422387, 0.48549315, 0.48676063, 0.48802646, 0.4892908, 0.49055382, 0.49181567, 0.4930765, 0.49433648, 0.49559576, 0.4968545, 0.49811286, 0.49937098, 0.50062902, 0.50188714, 0.5031455, 0.50440424, 0.50566352, 0.5069235, 0.50818433, 0.50944618, 0.5107092, 0.51197354, 0.51323937, 0.51450685, 0.51577613, 0.51704739, 0.51832079, 0.51959649, 0.52087466, 0.52215548, 0.5234391, 0.52472572, 0.5260155, 0.52730862, 0.52860527, 0.52990563, 0.53120989, 0.53251824, 0.53383087, 0.53514798, 0.53646977, 0.53779645, 0.53912822, 0.54046531, 0.54180793, 0.5431563, 0.54451066, 0.54587123, 0.54723826, 0.548612, 0.54999269, 0.55138059, 0.55277598, 0.55417912, 0.55559029, 0.5570098, 0.55843793, 0.55987498, 0.56132129, 0.56277718, 0.56424297, 0.56571903, 0.56720571, 0.56870339, 0.57021245, 0.5717333, 0.57326635, 0.57481202, 0.57637077, 0.57794307, 0.57952939, 0.58113023, 0.58274613, 0.58437763, 0.5860253, 0.58768973, 0.58937155, 0.5910714, 0.59278996, 0.59452794, 0.5962861, 0.59806522, 0.59986611, 0.60168964, 0.60353673, 0.60540833, 0.60730545, 0.60922916, 0.61118059, 0.61316093, 0.61517145, 0.6172135, 0.61928848, 0.62139793, 0.62354345, 0.62572677, 0.62794972, 0.63021427, 0.63252254, 0.63487677, 0.63727941, 0.63973308, 0.64224061, 0.64480505, 0.64742972, 0.65011824, 0.65287452, 0.65570285, 0.65860793, 0.6615949, 0.66466946, 0.66783786, 0.67110707, 0.67448482, 0.67797977, 0.68160163, 0.68536134, 0.68927131, 0.69334567, 0.69760064, 0.70205491, 0.7067302, 0.71165198, 0.71685033, 0.72236118, 0.72822787, 0.73450341, 0.74125354, 0.7485612, 0.75653308, 0.76530966, 0.77508119, 0.78611443, 0.79880003, 0.81374363, 0.83195987, 0.85535081, 0.88818667, 0.94409333, 1. };
 	static constexpr std::array<float, 512> shifted_hann_window = { 9.99990551e-01, 9.99914959e-01, 9.99763787e-01, 9.99537058e-01, 9.99234805e-01, 9.98857075e-01, 9.98403924e-01, 9.97875422e-01, 9.97271648e-01, 9.96592693e-01, 9.95838660e-01, 9.95009663e-01, 9.94105827e-01, 9.93127290e-01, 9.92074198e-01, 9.90946711e-01, 9.89745000e-01, 9.88469246e-01, 9.87119643e-01, 9.85696393e-01, 9.84199713e-01, 9.82629829e-01, 9.80986977e-01, 9.79271407e-01, 9.77483377e-01, 9.75623159e-01, 9.73691033e-01, 9.71687291e-01, 9.69612237e-01, 9.67466184e-01, 9.65249456e-01, 9.62962389e-01, 9.60605328e-01, 9.58178630e-01, 9.55682662e-01, 9.53117800e-01, 9.50484434e-01, 9.47782960e-01, 9.45013788e-01, 9.42177336e-01, 9.39274033e-01, 9.36304317e-01, 9.33268638e-01, 9.30167455e-01, 9.27001237e-01, 9.23770461e-01, 9.20475618e-01, 9.17117204e-01, 9.13695728e-01, 9.10211707e-01, 9.06665667e-01, 9.03058145e-01, 8.99389686e-01, 8.95660845e-01, 8.91872186e-01, 8.88024281e-01, 8.84117711e-01, 8.80153069e-01, 8.76130952e-01, 8.72051970e-01, 8.67916738e-01, 8.63725883e-01, 8.59480037e-01, 8.55179843e-01, 8.50825950e-01, 8.46419017e-01, 8.41959711e-01, 8.37448705e-01, 8.32886681e-01, 8.28274329e-01, 8.23612347e-01, 8.18901439e-01, 8.14142317e-01, 8.09335702e-01, 8.04482319e-01, 7.99582902e-01, 7.94638193e-01, 7.89648938e-01, 7.84615893e-01, 7.79539817e-01, 7.74421479e-01, 7.69261652e-01, 7.64061117e-01, 7.58820659e-01, 7.53541070e-01, 7.48223150e-01, 7.42867702e-01, 7.37475536e-01, 7.32047467e-01, 7.26584315e-01, 7.21086907e-01, 7.15556073e-01, 7.09992651e-01, 7.04397480e-01, 6.98771407e-01, 6.93115283e-01, 6.87429962e-01, 6.81716305e-01, 6.75975174e-01, 6.70207439e-01, 6.64413970e-01, 6.58595644e-01, 6.52753341e-01, 6.46887944e-01, 6.41000339e-01, 6.35091417e-01, 6.29162070e-01, 6.23213197e-01, 6.17245695e-01, 6.11260467e-01, 6.05258418e-01, 5.99240456e-01, 5.93207489e-01, 5.87160431e-01, 5.81100196e-01, 5.75027699e-01, 5.68943859e-01, 5.62849596e-01, 5.56745831e-01, 5.50633486e-01, 5.44513487e-01, 5.38386758e-01, 5.32254225e-01, 5.26116815e-01, 5.19975458e-01, 5.13831080e-01, 5.07684611e-01, 5.01536980e-01, 4.95389117e-01, 4.89241951e-01, 4.83096412e-01, 4.76953428e-01, 4.70813928e-01, 4.64678841e-01, 4.58549094e-01, 4.52425614e-01, 4.46309327e-01, 4.40201156e-01, 4.34102027e-01, 4.28012860e-01, 4.21934577e-01, 4.15868096e-01, 4.09814335e-01, 4.03774209e-01, 3.97748631e-01, 3.91738511e-01, 3.85744760e-01, 3.79768282e-01, 3.73809982e-01, 3.67870760e-01, 3.61951513e-01, 3.56053138e-01, 3.50176526e-01, 3.44322565e-01, 3.38492141e-01, 3.32686134e-01, 3.26905422e-01, 3.21150881e-01, 3.15423378e-01, 3.09723782e-01, 3.04052952e-01, 2.98411747e-01, 2.92801019e-01, 2.87221617e-01, 2.81674384e-01, 2.76160159e-01, 2.70679775e-01, 2.65234062e-01, 2.59823842e-01, 2.54449933e-01, 2.49113148e-01, 2.43814294e-01, 2.38554171e-01, 2.33333576e-01, 2.28153297e-01, 2.23014117e-01, 2.17916814e-01, 2.12862158e-01, 2.07850913e-01, 2.02883837e-01, 1.97961681e-01, 1.93085190e-01, 1.88255099e-01, 1.83472140e-01, 1.78737036e-01, 1.74050502e-01, 1.69413247e-01, 1.64825973e-01, 1.60289372e-01, 1.55804131e-01, 1.51370928e-01, 1.46990432e-01, 1.42663307e-01, 1.38390206e-01, 1.34171776e-01, 1.30008654e-01, 1.25901469e-01, 1.21850843e-01, 1.17857388e-01, 1.13921708e-01, 1.10044397e-01, 1.06226043e-01, 1.02467221e-01, 9.87685015e-02, 9.51304424e-02, 9.15535940e-02, 8.80384971e-02, 8.45856832e-02, 8.11956742e-02, 7.78689827e-02, 7.46061116e-02, 7.14075543e-02, 6.82737943e-02, 6.52053053e-02, 6.22025514e-02, 5.92659864e-02, 5.63960544e-02, 5.35931893e-02, 5.08578147e-02, 4.81903443e-02, 4.55911813e-02, 4.30607187e-02, 4.05993391e-02, 3.82074146e-02, 3.58853068e-02, 3.36333667e-02, 3.14519350e-02, 2.93413412e-02, 2.73019047e-02, 2.53339336e-02, 2.34377255e-02, 2.16135671e-02, 1.98617342e-02, 1.81824916e-02, 1.65760932e-02, 1.50427819e-02, 1.35827895e-02, 1.21963367e-02, 1.08836332e-02, 9.64487731e-03, 8.48025644e-03, 7.38994662e-03, 6.37411270e-03, 5.43290826e-03, 4.56647559e-03, 3.77494569e-03, 3.05843822e-03, 2.41706151e-03, 1.85091253e-03, 1.36007687e-03, 9.44628746e-04, 6.04630957e-04, 3.40134910e-04, 1.51180595e-04, 3.77965773e-05, 0.00000000e+00, 0.00000000e+00, 3.77965773e-05, 1.51180595e-04, 3.40134910e-04, 6.04630957e-04, 9.44628746e-04, 1.36007687e-03, 1.85091253e-03, 2.41706151e-03, 3.05843822e-03, 3.77494569e-03, 4.56647559e-03, 5.43290826e-03, 6.37411270e-03, 7.38994662e-03, 8.48025644e-03, 9.64487731e-03, 1.08836332e-02, 1.21963367e-02, 1.35827895e-02, 1.50427819e-02, 1.65760932e-02, 1.81824916e-02, 1.98617342e-02, 2.16135671e-02, 2.34377255e-02, 2.53339336e-02, 2.73019047e-02, 2.93413412e-02, 3.14519350e-02, 3.36333667e-02, 3.58853068e-02, 3.82074146e-02, 4.05993391e-02, 4.30607187e-02, 4.55911813e-02, 4.81903443e-02, 5.08578147e-02, 5.35931893e-02, 5.63960544e-02, 5.92659864e-02, 6.22025514e-02, 6.52053053e-02, 6.82737943e-02, 7.14075543e-02, 7.46061116e-02, 7.78689827e-02, 8.11956742e-02, 8.45856832e-02, 8.80384971e-02, 9.15535940e-02, 9.51304424e-02, 9.87685015e-02, 1.02467221e-01, 1.06226043e-01, 1.10044397e-01, 1.13921708e-01, 1.17857388e-01, 1.21850843e-01, 1.25901469e-01, 1.30008654e-01, 1.34171776e-01, 1.38390206e-01, 1.42663307e-01, 1.46990432e-01, 1.51370928e-01, 1.55804131e-01, 1.60289372e-01, 1.64825973e-01, 1.69413247e-01, 1.74050502e-01, 1.78737036e-01, 1.83472140e-01, 1.88255099e-01, 1.93085190e-01, 1.97961681e-01, 2.02883837e-01, 2.07850913e-01, 2.12862158e-01, 2.17916814e-01, 2.23014117e-01, 2.28153297e-01, 2.33333576e-01, 2.38554171e-01, 2.43814294e-01, 2.49113148e-01, 2.54449933e-01, 2.59823842e-01, 2.65234062e-01, 2.70679775e-01, 2.76160159e-01, 2.81674384e-01, 2.87221617e-01, 2.92801019e-01, 2.98411747e-01, 3.04052952e-01, 3.09723782e-01, 3.15423378e-01, 3.21150881e-01, 3.26905422e-01, 3.32686134e-01, 3.38492141e-01, 3.44322565e-01, 3.50176526e-01, 3.56053138e-01, 3.61951513e-01, 3.67870760e-01, 3.73809982e-01, 3.79768282e-01, 3.85744760e-01, 3.91738511e-01, 3.97748631e-01, 4.03774209e-01, 4.09814335e-01, 4.15868096e-01, 4.21934577e-01, 4.28012860e-01, 4.34102027e-01, 4.40201156e-01, 4.46309327e-01, 4.52425614e-01, 4.58549094e-01, 4.64678841e-01, 4.70813928e-01, 4.76953428e-01, 4.83096412e-01, 4.89241951e-01, 4.95389117e-01, 5.01536980e-01, 5.07684611e-01, 5.13831080e-01, 5.19975458e-01, 5.26116815e-01, 5.32254225e-01, 5.38386758e-01, 5.44513487e-01, 5.50633486e-01, 5.56745831e-01, 5.62849596e-01, 5.68943859e-01, 5.75027699e-01, 5.81100196e-01, 5.87160431e-01, 5.93207489e-01, 5.99240456e-01, 6.05258418e-01, 6.11260467e-01, 6.17245695e-01, 6.23213197e-01, 6.29162070e-01, 6.35091417e-01, 6.41000339e-01, 6.46887944e-01, 6.52753341e-01, 6.58595644e-01, 6.64413970e-01, 6.70207439e-01, 6.75975174e-01, 6.81716305e-01, 6.87429962e-01, 6.93115283e-01, 6.98771407e-01, 7.04397480e-01, 7.09992651e-01, 7.15556073e-01, 7.21086907e-01, 7.26584315e-01, 7.32047467e-01, 7.37475536e-01, 7.42867702e-01, 7.48223150e-01, 7.53541070e-01, 7.58820659e-01, 7.64061117e-01, 7.69261652e-01, 7.74421479e-01, 7.79539817e-01, 7.84615893e-01, 7.89648938e-01, 7.94638193e-01, 7.99582902e-01, 8.04482319e-01, 8.09335702e-01, 8.14142317e-01, 8.18901439e-01, 8.23612347e-01, 8.28274329e-01, 8.32886681e-01, 8.37448705e-01, 8.41959711e-01, 8.46419017e-01, 8.50825950e-01, 8.55179843e-01, 8.59480037e-01, 8.63725883e-01, 8.67916738e-01, 8.72051970e-01, 8.76130952e-01, 8.80153069e-01, 8.84117711e-01, 8.88024281e-01, 8.91872186e-01, 8.95660845e-01, 8.99389686e-01, 9.03058145e-01, 9.06665667e-01, 9.10211707e-01, 9.13695728e-01, 9.17117204e-01, 9.20475618e-01, 9.23770461e-01, 9.27001237e-01, 9.30167455e-01, 9.33268638e-01, 9.36304317e-01, 9.39274033e-01, 9.42177336e-01, 9.45013788e-01, 9.47782960e-01, 9.50484434e-01, 9.53117800e-01, 9.55682662e-01, 9.58178630e-01, 9.60605328e-01, 9.62962389e-01, 9.65249456e-01, 9.67466184e-01, 9.69612237e-01, 9.71687291e-01, 9.73691033e-01, 9.75623159e-01, 9.77483377e-01, 9.79271407e-01, 9.80986977e-01, 9.82629829e-01, 9.84199713e-01, 9.85696393e-01, 9.87119643e-01, 9.88469246e-01, 9.89745000e-01, 9.90946711e-01, 9.92074198e-01, 9.93127290e-01, 9.94105827e-01, 9.95009663e-01, 9.95838660e-01, 9.96592693e-01, 9.97271648e-01, 9.97875422e-01, 9.98403924e-01, 9.98857075e-01, 9.99234805e-01, 9.99537058e-01, 9.99763787e-01, 9.99914959e-01, 9.99990551e-01 };
@@ -401,7 +405,7 @@ private:
 
 	void stft(std::array<float, 25087>& xp, const std::array<float, 512>& window, std::array<std::array<std::complex<float>, 192>, 257>& out) {
 
-	
+
 		int n_fft = 512;
 		int hop_len = 128;
 
@@ -420,13 +424,13 @@ private:
 			}
 			for (int j = 0; j < 512; j++) {
 				temp_512[j] = temp_512[j] * window[j];
-				
+
 			}
 
 			fftwf_execute(plan_forward);
 
 			for (int e = 0; e < 257; e++) {
-				out[e][i] = temp_complex[e] /512.0f; //normalize to numpy, since internally we like to process using numpy normalized data.
+				out[e][i] = temp_complex[e] / 512.0f; //normalize to numpy, since internally we like to process using numpy normalized data.
 													//this follows numpy's convention of fct = 1/512.
 			}
 		}
@@ -447,11 +451,11 @@ private:
 			for (int n = 0; n < 257; n++) {
 				temp_complex[n] = Sx[n][i];
 			}
-			fftwf_execute(plan_reverse); 
+			fftwf_execute(plan_reverse);
 
 			// Perform FFT shift for a fixed size 
 
-			for (int j = 0;j < 256 ; j++) {
+			for (int j = 0; j < 256; j++) {
 				std::swap(temp_512[j], temp_512[j + 256]);
 			}
 
@@ -512,7 +516,7 @@ private:
 			idx += inc
 		*/
 		// Loop over the middle portion of the output, where the filter is entirely contained within the input
-		
+
 		for (int i = 0; i < INPUT_SIZE - KERNEL_SIZE + 1; i++) {
 			ret[i + N_LEFT] = std::inner_product(in.begin() + i, in.begin() + i + KERNEL_SIZE, kernel.begin(), 0.0f);
 		}
@@ -587,7 +591,7 @@ private:
 
 		std::copy(ret.begin(), ret.begin() + INPUT_SIZE, in.begin());
 	}
-	
+
 	inline void numpy_entropy_smooth(std::array<float, 192>& in, std::array<float, 192>& out) {
 		constexpr int PADDING_SIZE = 6;
 		constexpr int INPUT_SIZE = 192;
@@ -599,10 +603,10 @@ private:
 		convolve_same_entropy(padded);
 
 		for (int i = PADDING_SIZE; i < INPUT_SIZE + PADDING_SIZE; i++) {
-			out[i - PADDING_SIZE] = padded[i]/3.0f;
+			out[i - PADDING_SIZE] = padded[i] / 3.0f;
 		}
 	}
-	
+
 	inline void numpy_sawtooth_smooth(std::array<float, 192>& in) {
 		constexpr int PADDING_SIZE = 15;
 		constexpr int INPUT_SIZE = 192;
@@ -1023,28 +1027,28 @@ public:
 		if (val == 6000 || val == 12000 || val == 24000 || val == 48000) {
 			flag = 0;
 		}
-		
-			// Round up to the nearest supported sample rate, if necessary, and set the settings.
+
+		// Round up to the nearest supported sample rate, if necessary, and set the settings.
 		if (val < 6001) {
-				sample_rate = 6000;
-				N_FFT = 64;
-				hop_size = 32;
-			}
+			sample_rate = 6000;
+			N_FFT = 64;
+			hop_size = 32;
+		}
 		else if (val < 12001) {
-				sample_rate = 12000;
-				N_FFT = 128;
-				hop_size = 64;
-			}
+			sample_rate = 12000;
+			N_FFT = 128;
+			hop_size = 64;
+		}
 		else if (val < 24001) {
-				sample_rate = 24000;
-				N_FFT = 256;
-				hop_size = 128;
-			}
+			sample_rate = 24000;
+			N_FFT = 256;
+			hop_size = 128;
+		}
 		else {
-				sample_rate = 48000;
-				N_FFT = 512;
-				hop_size = 128;
-			}
+			sample_rate = 48000;
+			N_FFT = 512;
+			hop_size = 128;
+		}
 		if (flag == 1) {
 			std::cout << "Sample rate was corrected to " << sample_rate << ", sample rates not a divisor of 48k greater than 3k not supported" << std::endl;
 
@@ -1068,7 +1072,8 @@ public:
 			if (NBINS_1 > 257) { NBINS_1 = 257; }//make sure sane inputs
 			if (NBINS_1 < 5) {
 				std::cout << "bandpass limit  was corrected to 5 bands , bandpass less  than 5 not allowed" << std::endl;
-				NBINS_1 = 5; }//you cant use less than 5 bins!
+				NBINS_1 = 5;
+			}//you cant use less than 5 bins!
 			if (NBINS_1 == 37) {//let's fill the std::array
 				NBINS_last = NBINS_1;
 				std::copy(std::begin(logit_37), std::end(logit_37), std::begin(logit_distribution));
@@ -1149,49 +1154,234 @@ public:
 
 
 
-
-
-////////////code below here is just for testing purposes
-void generate_sine_wave(std::array<float, 8192>& data, float freq, float phase, float amplitude) {
-	const float sample_rate = 48000;
-	const float delta_phase = 2.0f * M_PI * freq / sample_rate;
-
-	for (int i = 0; i < 8192; i++) {
-		data[i] += amplitude * sin(delta_phase * i + phase);
-	}
-}
-#ifndef M_PI_2
-#define M_PI_2 (M_PI / 2.0)
-#endif
-
-#ifndef M_PI_4
-#define M_PI_4 (M_PI / 4.0)
-#endif
-
-
-
-
-#include <ctime>
-
-int main() {
+std::vector<float> process_data(const std::vector<float>& input_data) {
+	std::vector<float> output_data;
 	Filter my_filter;
-	std::array<float, 8192> demo = { 0 };
-	generate_sine_wave(demo, 440.0f, 0.0f, 1.0f);
-	std::array<float, 8192> output = { 0 };
 
-	clock_t start_time, end_time;
-	start_time = clock(); // get start time
-	
-	for (int i = 0; i < 20; i++) {
-		output = my_filter.process(demo); // execute the function
+	// Process data in chunks of 8192 samples
+	std::array<float, 8192> in_chunk;
+	std::array<float, 8192> out_chunk;
+	size_t i = 0;
+	for (; i + 8192 <= input_data.size(); i += 8192) {
+		// Copy 8192 samples into input chunk
+		std::copy_n(input_data.begin() + i, 8192, in_chunk.begin());
+
+		// Apply filter to input chunk
+		out_chunk = my_filter.process(in_chunk);
+
+		// Copy filtered samples into output data
+		output_data.insert(output_data.end(), out_chunk.begin(), out_chunk.end());
 	}
 
-	end_time = clock(); // get end time
-	float duration = (float)(end_time - start_time) / CLOCKS_PER_SEC * 1000.0; // calculate duration in milliseconds
-	std::cout << "Total execution time: " << duration << " milliseconds" << std::endl;
-	system("pause");
+	// Process the last chunk if it's smaller than 8192 samples
+	if (i < input_data.size()) {
+		std::fill(in_chunk.begin(), in_chunk.end(), 0.0f);
+		std::copy_n(input_data.begin() + i, input_data.size() - i, in_chunk.begin());
+		out_chunk = my_filter.process(in_chunk);
+		output_data.insert(output_data.end(), out_chunk.begin(), out_chunk.begin() + input_data.size() - i);
+	}
+	output_data.resize(input_data.size());
+	return output_data;
+}
+
+
+
+#include <algorithm>
+#include <iostream>
+#include <string_view>
+
+
+void write_wav(const std::string& filename, const std::vector<float>& data) {
+	// Open output file stream
+	std::ofstream file(filename + "_denoised.wav", std::ios::binary);
+	if (!file.is_open()) {
+		std::cerr << "Error: could not open file " << filename << "_denoised.wav" << std::endl;
+		return;
+	}
+
+	// Write WAV header
+	const int sample_rate = 48000;
+	const int num_channels = 1;
+	const int bits_per_sample = 16;
+	const int byte_rate = sample_rate * num_channels * bits_per_sample / 8;
+	const int block_align = num_channels * bits_per_sample / 8;
+	const int data_size = data.size() * block_align;
+	file.write("RIFF", 4);
+	file.write(reinterpret_cast<const char*>(&data_size + 36), 4);
+	file.write("WAVE", 4);
+	file.write("fmt ", 4);
+	file.write(reinterpret_cast<const char*>(&(num_channels)), 2);
+	file.write(reinterpret_cast<const char*>(&(sample_rate)), 4);
+	file.write(reinterpret_cast<const char*>(&(byte_rate)), 4);
+	file.write(reinterpret_cast<const char*>(&(block_align)), 2);
+	file.write(reinterpret_cast<const char*>(&(bits_per_sample)), 2);
+	file.write("data", 4);
+	file.write(reinterpret_cast<const char*>(&data_size), 4);
+
+	// Write audio data
+	for (float sample : data) {
+		// Convert sample to 16-bit integer
+		const int sample_int = static_cast<int>(sample * 32767.0f);
+
+		// Clamp to valid range
+		const int sample_clamped = (sample_int > 32767) ? 32767 : ((sample_int < -32768) ? -32768 : sample_int);
+
+		// Write 16-bit integer as two bytes in little-endian format
+		const char byte1 = static_cast<char>(sample_clamped & 0xff);
+		const char byte2 = static_cast<char>((sample_clamped >> 8) & 0xff);
+		file.write(&byte1, 1);
+		file.write(&byte2, 1);
+	}
+
+	// Close file stream
+	file.close();
+}
+
+
+bool read_wav_header(std::ifstream& file, WAVEFORMATEX& format, DWORD& data_size) {
+	// Read WAV header
+	char chunk_id[4];
+	DWORD chunk_size;
+	char format_id[4];
+	DWORD format_size;
+
+	// RIFF chunk
+	file.read(chunk_id, 4);
+	if (strncmp(chunk_id, "RIFF", 4) != 0) {
+		std::cerr << "Error: invalid WAV file format." << std::endl;
+		return false;
+	}
+	file.read(reinterpret_cast<char*>(&chunk_size), 4);
+	file.read(chunk_id, 4);
+	if (strncmp(chunk_id, "WAVE", 4) != 0) {
+		std::cerr << "Error: invalid WAV file format." << std::endl;
+		return false;
+	}
+
+	// Format chunk
+	file.read(chunk_id, 4);
+	if (strncmp(chunk_id, "fmt ", 4) != 0) {
+		std::cerr << "Error: invalid WAV file format." << std::endl;
+		return false;
+	}
+	file.read(reinterpret_cast<char*>(&format_size), 4);
+	file.read(reinterpret_cast<char*>(&format), format_size);
+	file.seekg(format_size - sizeof(format));
+
+	// Data chunk
+	file.read(chunk_id, 4);
+	if (strncmp(chunk_id, "data", 4) != 0) {
+		std::cerr << "Error: invalid WAV file format." << std::endl;
+		return false;
+	}
+	file.read(reinterpret_cast<char*>(&data_size), 4);
+
+	return true;
+}
+
+bool load_wav_file(const std::string& filename, std::vector<float>& samples) {
+	// Open WAV file
+	std::ifstream file(filename, std::ios::binary);
+	if (!file) {
+		std::cerr << "Error: could not open WAV file." << std::endl;
+		return false;
+	}
+
+	// Read WAV header
+	WAVEFORMATEX format = { 0 };
+	DWORD data_size = 0;
+
+	if (!read_wav_header(file, format, data_size)) {
+		std::cerr << "Error: invalid WAV file format." << std::endl;
+		return false;
+	}
+
+	// Check for stereo and sample rate
+	if (format.nChannels != 1) {
+		std::cerr << "Error: stereo WAV files are not supported." << std::endl;
+		return false;
+	}
+	if (format.nSamplesPerSec != 48000) {
+		std::cerr << "Error: sample rate must be 48000Hz." << std::endl;
+		return false;
+	}
+
+	// Read data from file
+	size_t num_samples = data_size / sizeof(float);
+	samples.resize(num_samples);
+	file.read(reinterpret_cast<char*>(samples.data()), data_size);
+	if (file.gcount() != data_size) {
+		std::cerr << "Error: could not read WAV data." << std::endl;
+		samples.clear();
+		return false;
+	}
+
+	// Convert NaN values to 0
+	for (float& sample : samples) {
+		if (std::isnan(sample)) {
+			sample = 0.0f;
+		}
+	}
+
+	return true;
+}
+
+
+
+
+int main(int argc, char* argv[]) {
+
+	// Initialize filename
+	std::string filename;
+	if (argc > 1) {
+		filename = argv[1];
+	}
+
+	// If no filename is provided, open file picker
+	if (filename.empty()) {
+		OPENFILENAME ofn = { 0 };
+		WCHAR szFile[260] = { 0 };
+
+		ofn.lStructSize = sizeof(OPENFILENAME);
+		ofn.hwndOwner = NULL;
+		ofn.lpstrFile = (LPWSTR)szFile;
+		ofn.nMaxFile = sizeof(szFile);
+		ofn.lpstrFilter = L"All Files (*.*)\0*.*\0";
+		ofn.nFilterIndex = 1;
+		ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+		if (GetOpenFileName(&ofn) == TRUE) {
+			char buffer[260] = { 0 };
+			wcstombs_s(NULL, buffer, 260, szFile, 260);
+			filename = buffer;
+		}
+		else {
+			// Handle error
+			std::cerr << "Error: no file selected. Terminating" << std::endl;
+			return 1;
+		}
+	}
+
+	std::vector<float> audio_data = {};
+	if (!load_wav_file(filename, audio_data)) {
+		std::cerr << "Error: could not load audio file " << filename << std::endl;
+		return 1;
+	}
+
+	// Process audio data
+	std::vector<float> processed_data = process_data(audio_data);
+
+	// Write denoised audio data to new WAV file
+	write_wav(filename, processed_data);
+
+	std::cout << "Finished processing audio file " << filename << std::endl;
+
 
 
 	return 0;
 }
+
+
+
+
 
