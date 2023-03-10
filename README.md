@@ -13,9 +13,8 @@ contributions from an engineer to derive such a theoretical basis for this work 
 More explanations in the algorithm explanation file, however: the basic gist of it is this:
 
 It works on the basis of logit comparisons for time bins and thresholding using robust measures, with minimal dependencies.
-The code itself is additionally MIT and GPL licensed, depending on numba, numpy, some library's stfts, and, for specific use cases,
-invoking dearpygui, tk, pyaudio, and other components as needed, but they are not required for the core algorithm to function.
-OLA-consistent, dft-centered, optimal, numba-compatible code was adapted from ssqueezepy and pyroomacoustics methods.
+The code itself is additionally MIT and GPL licensed, depending on numba and numpy alone, with the possibility of using pyfftw or pyfftw3 left up to the reader-
+the code works fast and efficiently enough as it is for realtime use. for specific use cases, invoking dearpygui, tk, pyaudio, and other components as needed, but they are not required for the core algorithm to function. OLA-consistent, dft-centered, optimal, numba-compatible code was adapted from ssqueezepy and pyroomacoustics methods.
 
 For the c++, everything has been ported, but has not been tested- only compiled and verified to run, and manually gone over with a fine tooth comb.
 results are not satisfactorially identical to the python,  and I am too frustrated to continue different things trying to fix it.
