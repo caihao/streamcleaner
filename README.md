@@ -15,10 +15,10 @@ More explanations in the algorithm explanation file, however: the basic gist of 
 It works on the basis of logit comparisons for time bins and thresholding using robust measures, with minimal dependencies.
 The code itself is additionally MIT and GPL licensed, depending on numba, numpy, some library's stfts, and, for specific use cases,
 invoking dearpygui, tk, pyaudio, and other components as needed, but they are not required for the core algorithm to function.
-It would be easy to port this algorithm to other languages provided you have a numpy-equivalent array handling library and stft.
-OLA-consistent processing is provided by pyroomacoustics, but more scientifically precise analysis windows are provided by ssqueezepy.
+OLA-consistent, dft-centered, optimal, numba-compatible code was adapted from ssqueezepy and pyroomacoustics methods.
 
 For the c++, everything has been ported, but has not been tested- only compiled and verified to run, and manually gone over with a fine tooth comb.
 results are not satisfactorially identical to the python,  and I am too frustrated to continue different things trying to fix it.
+
 
 
