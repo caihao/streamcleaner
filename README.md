@@ -4,9 +4,7 @@ Since i'm not good at explanations, I'll just keep this short and simple:
 realtime.py is the file you want here. 
 
 This repository contains a really good method for reducing noise in audio, for use with speech and other similar waveforms.
-It is free to use, and the licensing agreement covering the algorithm itself is permissive of both private and commercial use provided 
-that the commercial users represent private, non-multinational entities. It is permissive of modification, sublicensing, and the free use
-by any individual for any reason for their own personal use, including modification and commercial use directed to private entities.
+It is free to use, and MIT/GPL licensed.
 
 It can be used to denoise CW as well, although it should be tweaked for that. It should not be used for denoising data modes.
 It is meant for use on shortwave radio, with bandlimited single sideband signals with bandwidth of 4000hz or less.
@@ -20,6 +18,7 @@ invoking dearpygui, tk, pyaudio, and other components as needed, but they are no
 It would be easy to port this algorithm to other languages provided you have a numpy-equivalent array handling library and stft.
 OLA-consistent processing is provided by pyroomacoustics, but more scientifically precise analysis windows are provided by ssqueezepy.
 
-
+For the c++, everything has been ported, but has not been tested- only compiled and verified to run, and manually gone over with a fine tooth comb.
+results are not satisfactorially identical to the python,  and I am too frustrated to continue different things trying to fix it.
 
 
