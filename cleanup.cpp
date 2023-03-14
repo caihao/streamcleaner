@@ -356,6 +356,41 @@ private:
 			}
 		}
 	}
+	
+	//note: cant be arsed to make this work right now, this is just a temp placeholder chatgpt made to port the new entropy behavior from python.
+	//to make this work, make a duplicate correlation function that considers NBINS_LAST*3 elements out of d3,
+	//make an array called d3 which is 3 times your maximum (257*3 in the current implementation
+	//and each time the logit is re-generated, fill an array just like d3 with a logistic window of the right size for use in the comparison
+	void fast_entropy__new(std::array<std::array<float, NCOLS>, NBINS_last>& data) {
+    for (int i = 1; i < NCOLS - 1; i++) {
+        int d3_index = 0;
+        for (int j = 0; j < NBINS_last; j++) {
+            d3[d3_index++] = data[j][i - 1];
+            d3[d3_index++] = data[j][i];
+            d3[d3_index++] = data[j][i + 1];
+        }
+
+        std::sort(d3.begin(), d3.begin() + d3_index);
+
+        float dx = d3[d3_index - 1] - d3[0];
+        for (int j = 0; j < d3_index; j++) {
+            d3[j] = (d3[j] - d3[0]) / dx;
+        }
+
+        float v;
+        if (i == 0 || i == NCOLS - 1) {
+            v = correlationCoefficient(temp_257, logit_distribution);
+        } else {
+            v = correlate3(d3, logit_distribution_3);
+        }
+
+        if (std::isnan(v)) {
+            entropy_unmasked[i] = 0.0f;
+        } else {
+            entropy_unmasked[i] = 1.0f - v;
+        }
+    }
+}
 
 
 	/// <summary>
