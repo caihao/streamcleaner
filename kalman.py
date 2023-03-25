@@ -179,8 +179,9 @@ R = find_noise_factor(measurements,121,1921)
 
 R[R<atd(R)] = 0 #this step is unclear
 R[R>0] = 1 #after finding our noise floor, threshold all remaining values to 1
-
+#alternatively, normalize R
 result = measurements * R
+#this gives *some* noise reduction on simon and dave, but does so without any kind of STFT processing
 
 
 
