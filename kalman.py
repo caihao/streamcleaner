@@ -66,7 +66,6 @@ def kalman(measurements: np.ndarray):
   return x_result
 
 
-
 import numba
 import numpy
 
@@ -143,6 +142,17 @@ def generate_true_logistic(points:int):
     fprint[0] = -fprint[-1]
     fprint = (fprint - fprint[0])/fprint[-1] #normalize between 0 and 1
     return fprint
+
+
+@numba.jit()
+def generate_true_logistic(points:int):
+    fprint = numpy.linspace(0.0,1.0,points)
+    fprint[1:-1]  /= 1 - fprint[1:-1]
+    fprint[1:-1]  = numpy.log(fprint[1:-1])
+    fprint[-1] = ((2*fprint[-2])  - fprint[-3]) 
+    fprint[0] = -fprint[-1]
+    fprint = (fprint - fprint[0])/fprint[-1] #normalize between 0 and 1
+    return fprint
   
 @numba.jit()
 def find_noise_factor(data: numpy.ndarray,logit_size: int,smooth_size:int):
@@ -153,20 +163,34 @@ def find_noise_factor(data: numpy.ndarray,logit_size: int,smooth_size:int):
     pad_before = logit_size//2
     pad_after = logit_size//2+1
 
-  logit_three = generate_true_logistic(logit_size)    #37 and 37*3
+  logit_three = generate_true_logistic(logit_size)   
   product1 = numpy.zeros(data.size,dtype=numpy.float64)
+  product2 = numpy.zeros(data.size,dtype=numpy.float64)
 
   for i in range(pad_before,data.size-pad_after):
     temp = data[i-pad_before:i+pad_after]
+    positions = numpy.argsort(temp)
+    indx = numpy.argwhere(positions==pad_before)[0]
     temp = numpy.sort(temp)
     temp = (temp - temp[0])/temp[-1] ##normalize to 0,1
-    product1[i] = 1 - numpy.corrcoef(temp,logit_three)[0,1]
+    a =  numpy.corrcoef(temp,logit_three)[0,1]
+    b = numpy.abs(temp[indx] - logit_three[indx])
+    c = a*b
+    product1[i] = c[0]
+    product2[i] = 1 - a
 
   product1[:pad_before] = product1[pad_before:pad_before*2]
   product1[-pad_after:] = numpy.flip(product1[-pad_after*2:-pad_after])
+  product2[:pad_before] = product2[pad_before:pad_before*2]
+  product2[-pad_after:] = numpy.flip(product2[-pad_after*2:-pad_after])
 
-  result = smoothpadded(product1,smooth_size)
-  return result
+  R = smoothpadded(product1,smooth_size)
+  T = smoothpadded(product2,smooth_size)
+  good = (R*T)*16
+  bad = (R/T)/16
+  r = bad - good
+  r[r<0] = 0
+  return r
 
 
 measurements = data[0:rate]
@@ -174,14 +198,19 @@ measurements = data[0:rate]
 #logit_size: int,smooth_size:int - logit size should be an odd number close to 1/4th of rate. smooth_size should be an odd number close to 4x rate.
 #rate should be the sampling rate / some quantity. For 48000 I chose 100. 
 #this lends? time resolution? 10ms frequency resolution? 800? idk
-#time to process is close to 0.61x realtimes using numba
+#time to process is close to 0.61x realtimes using numba so it by no means catches up with our stft algo
+#however- the noise reduction can be said to be generally applicable to all forms of signal
 R = find_noise_factor(measurements,121,1921)
 
-R[R<atd(R)] = 0 #this step is unclear
-R[R>0] = 1 #after finding our noise floor, threshold all remaining values to 1
-#alternatively, normalize R
-result = measurements * R
-#this gives *some* noise reduction on simon and dave, but does so without any kind of STFT processing
+def denoise(data: numpy.ndarray):
+  initial = data.copy()
+  noise =  find_noise_factor(data,121,1921)
+  initialnoiseenergy = initial * noise
+  newresult = initial - initialnoiseenergy
+  
+  return newresult
+result = denoise(data)
+
 
 
 
