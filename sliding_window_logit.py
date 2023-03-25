@@ -108,7 +108,8 @@ def find_noise_factor(data: numpy.ndarray,logit_size: int,smooth_size:int):
 #rate should be the sampling rate / some quantity. For 48000 I chose 100. 
 #this lends? time resolution? 10ms frequency resolution? 800? idk
 #time to process is close to 0.61x - 1 second of audio in 0.61 seconds, using numba so it by no means catches up with our stft algo
-#however- the noise reduction can be said to be generally applicable to all forms of signal
+#however- the noise reduction can be said to be generally applicable to all forms of signal, and since it is a very simple algorithm(
+#in terms of how much information it considers) then it could even be integrated into fpga.
 R = find_noise_factor(measurements,121,1921)
 
 def denoise(data: numpy.ndarray):
